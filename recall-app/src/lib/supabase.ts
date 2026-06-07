@@ -32,6 +32,8 @@ export type Item = {
   spot: string | null
   notes: string | null
   member_id: string | null
+  quantity: number
+  expires_at: string | null
   created_at: string
   rooms?: Room
   members?: Member

@@ -6,11 +6,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { name, room_id, spot, notes, member_id } = await request.json()
+  const { name, room_id, spot, notes, member_id, quantity, expires_at } = await request.json()
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 })
   const { data, error } = await supabase
     .from('items')
-    .update({ name, room_id, spot: spot || null, notes: notes || null, member_id: member_id || null })
+    .update({
+      name, room_id,
+      spot: spot || null,
+      notes: notes || null,
+      member_id: member_id || null,
+      quantity: quantity ? Number(quantity) : 1,
+      expires_at: expires_at || null,
+    })
     .eq('id', id)
     .select('*, rooms(*), members(*)')
     .maybeSingle()

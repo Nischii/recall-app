@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const { name, room_id, spot, notes, member_id } = body
+  const { name, room_id, spot, notes, member_id, quantity, expires_at } = body
 
   if (!name || !room_id) {
     return NextResponse.json({ error: 'name and room_id are required' }, { status: 400 })
@@ -29,7 +29,14 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from('items')
-    .insert({ name, room_id, spot: spot || null, notes: notes || null, member_id: member_id || null })
+    .insert({
+      name, room_id,
+      spot: spot || null,
+      notes: notes || null,
+      member_id: member_id || null,
+      quantity: quantity ? Number(quantity) : 1,
+      expires_at: expires_at || null,
+    })
     .select('*, rooms(id,name,icon), members(id,name)')
     .single()
 

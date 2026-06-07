@@ -40,7 +40,7 @@ export default function RecallApp() {
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
-  const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '' })
+  const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '', quantity: '1', expires_at: '' })
   const [toast, setToast] = useState('')
   const [spots, setSpots] = useState<Spot[]>([])
   const [newSublocInput, setNewSublocInput] = useState('')
@@ -118,7 +118,7 @@ export default function RecallApp() {
     if (res.ok) {
       const newItem = await res.json()
       setItems(prev => [newItem, ...prev])
-      setForm(f => ({ ...f, name: '', spot: '', notes: '' }))
+      setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))
       setTab('browse')
       setActiveRoom(form.room_id)
       setActiveSubLoc(form.spot || null)
@@ -135,13 +135,15 @@ export default function RecallApp() {
       spot: item.spot || '',
       notes: item.notes || '',
       member_id: item.member_id || '',
+      quantity: String(item.quantity ?? 1),
+      expires_at: item.expires_at || '',
     })
     setTab('add')
   }
 
   function cancelEdit() {
     setEditingItemId(null)
-    setForm(f => ({ ...f, name: '', spot: '', notes: '' }))
+    setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))
     setTab('browse')
   }
 
@@ -157,7 +159,7 @@ export default function RecallApp() {
       const updated = await res.json()
       setItems(prev => prev.map(it => it.id === editingItemId ? updated : it))
       setEditingItemId(null)
-      setForm(f => ({ ...f, name: '', spot: '', notes: '' }))
+      setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))
       setTab('browse')
       showToast('Item updated!')
     } else {
@@ -502,6 +504,24 @@ export default function RecallApp() {
                     <input placeholder="e.g. Blue handle, next to the drill" value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
                   </div>
+                  <div style={{display:'flex', gap:12}}>
+                    <div className={styles.field} style={{flex:1}}>
+                      <label className={styles.label}>Quantity</label>
+                      <input
+                        type="number" min="1" placeholder="1"
+                        value={form.quantity}
+                        onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+                      />
+                    </div>
+                    <div className={styles.field} style={{flex:2}}>
+                      <label className={styles.label}>Expiry date <span className={styles.labelHint}>(optional)</span></label>
+                      <input
+                        type="date"
+                        value={form.expires_at}
+                        onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
+                      />
+                    </div>
+                  </div>
                   <div className={styles.formActions}>
                     {editingItemId ? (
                       <>
@@ -512,7 +532,7 @@ export default function RecallApp() {
                       </>
                     ) : (
                       <>
-                        <button className={styles.btnGhost} onClick={() => setForm(f => ({ ...f, name: '', spot: '', notes: '' }))}>Clear</button>
+                        <button className={styles.btnGhost} onClick={() => setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))}>Clear</button>
                         <button className={styles.btnPrimary} onClick={handleAdd} disabled={adding || !form.name.trim()}>
                           {adding ? 'Saving...' : '✓ Save item'}
                         </button>
@@ -540,12 +560,22 @@ export default function RecallApp() {
   )
 }
 
+function expiryBadge(expires_at: string | null) {
+  if (!expires_at) return null
+  const days = Math.ceil((new Date(expires_at).getTime() - Date.now()) / 86400000)
+  if (days < 0) return { label: 'Expired', color: '#ef4444', bg: '#ef444420' }
+  if (days === 0) return { label: 'Expires today', color: '#ef4444', bg: '#ef444420' }
+  if (days <= 30) return { label: `Expires in ${days}d`, color: '#f59e0b', bg: '#f59e0b20' }
+  return { label: `Exp: ${new Date(expires_at).toLocaleDateString()}`, color: '#6b7280', bg: 'transparent' }
+}
+
 function ItemCard({ item, query, onDelete, onEdit, memberName, timeAgo: ago }: {
   item: Item; query: string; onDelete: (id: string) => void; onEdit: (item: Item) => void
   memberName: (id: string | null) => string; timeAgo?: string
 }) {
   const room = (item as any).rooms?.name || '—'
   const loc = item.spot ? `${room} › ${item.spot}` : room
+  const expiry = expiryBadge(item.expires_at)
   return (
     <div className={styles.itemCard}>
       <div className={styles.itemIcon}>{ROOM_ICONS[(item as any).rooms?.icon] || '📦'}</div>
@@ -555,6 +585,15 @@ function ItemCard({ item, query, onDelete, onEdit, memberName, timeAgo: ago }: {
         {item.notes && <div className={styles.itemNotes}>{item.notes}</div>}
         <div className={styles.itemMeta}>
           <span className={styles.memberBadge}>{memberName(item.member_id)}</span>
+          {(item.quantity ?? 1) > 1 && (
+            <span className={styles.memberBadge}>×{item.quantity}</span>
+          )}
+          {expiry && (
+            <span style={{fontSize:11, padding:'2px 7px', borderRadius:999, fontWeight:600,
+              color: expiry.color, background: expiry.bg, border: `1px solid ${expiry.color}40`}}>
+              {expiry.label}
+            </span>
+          )}
           {ago && <span className={styles.timeAgo}>{ago}</span>}
         </div>
       </div>
