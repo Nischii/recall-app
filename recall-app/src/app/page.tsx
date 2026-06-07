@@ -159,6 +159,10 @@ export default function RecallApp() {
       const room = await res.json()
       setRooms(prev => [...prev, room])
       setSublocs(prev => ({ ...prev, [room.id]: [] }))
+      showToast(`"${name.trim()}" added!`)
+    } else {
+      const err = await res.json().catch(() => ({}))
+      showToast(`Failed to add room: ${err.error || res.status}`)
     }
   }
 
