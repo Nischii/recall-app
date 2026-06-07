@@ -285,6 +285,20 @@ export default function RecallApp() {
                     </button>
                   </div>
 
+                  {!activeRoom && (
+                    <div style={{marginTop: 16}}>
+                      <p className={styles.sectionTitle}>
+                        All items — {items.filter(it => activeMember === 'everyone' || it.member_id === activeMember).length}
+                      </p>
+                      {items.filter(it => activeMember === 'everyone' || it.member_id === activeMember).length === 0
+                        ? <div className={styles.empty}>No items yet. Add your first one!</div>
+                        : items
+                            .filter(it => activeMember === 'everyone' || it.member_id === activeMember)
+                            .map(it => <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} memberName={memberName} />)
+                      }
+                    </div>
+                  )}
+
                   {activeRoom && (
                     <div>
                       {/* Sub-location bar */}

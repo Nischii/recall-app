@@ -46,6 +46,7 @@ alter table items enable row level security;
 
 create policy "Public read rooms" on rooms for select using (true);
 create policy "Public insert rooms" on rooms for insert with check (true);
+create policy "Public update rooms" on rooms for update using (true);
 create policy "Public delete rooms" on rooms for delete using (true);
 
 create policy "Public read members" on members for select using (true);
