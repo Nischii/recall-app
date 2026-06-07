@@ -144,6 +144,24 @@ export default function RecallApp() {
     showToast('Item removed')
   }
 
+  async function editRoom(roomId: string, currentName: string) {
+    const name = prompt('Rename room:', currentName)
+    if (!name?.trim() || name.trim() === currentName) return
+    const res = await fetch(`/api/rooms/${roomId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name.trim() }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setRooms(prev => prev.map(r => r.id === roomId ? updated : r))
+      showToast(`Room renamed to "${updated.name}"`)
+    } else {
+      const err = await res.json().catch(() => ({}))
+      showToast(`Failed to rename: ${err.error || res.status}`)
+    }
+  }
+
   async function addRoom() {
     const name = prompt('New room name:')
     if (!name?.trim()) return
@@ -301,7 +319,10 @@ export default function RecallApp() {
                         {/* Manage spots panel */}
                         {managingRoom === activeRoom && (
                           <div className={styles.managePanel}>
-                            <p className={styles.managePanelTitle}>Spots in {roomName(activeRoom)}</p>
+                            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}}>
+                            <p className={styles.managePanelTitle} style={{marginBottom:0}}>Spots in {roomName(activeRoom)}</p>
+                            <button className={styles.manageBtn} onClick={() => editRoom(activeRoom, roomName(activeRoom))}>✏️ Rename room</button>
+                          </div>
                             <div className={styles.managePanelList}>
                               {(sublocs[activeRoom] || []).length === 0 && (
                                 <p className={styles.managePanelEmpty}>No spots yet. Add your first one below.</p>
