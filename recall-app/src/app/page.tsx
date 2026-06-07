@@ -87,6 +87,12 @@ export default function RecallApp() {
     }
   }, [activeMember])
 
+  useEffect(() => {
+    if (activeRoom) {
+      setForm(f => ({ ...f, room_id: activeRoom }))
+    }
+  }, [activeRoom])
+
   // When room changes in form, reset spot
   const handleFormRoomChange = (roomId: string) => {
     setForm(f => ({ ...f, room_id: roomId, spot: '' }))
