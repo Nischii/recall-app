@@ -500,8 +500,3 @@ function ItemCard({ item, query, onDelete, memberName, timeAgo: ago }: {
     </div>
   )
 }
-
-const ROOM_ICONS: Record<string, string> = {
-  car: '🚗', tool: '🔧', bed: '🛏️', sofa: '🛋️', droplet: '🚿',
-  'stairs-down': '📦', home: '🏠', kitchen: '🍳', garage: '🔩',
-}
