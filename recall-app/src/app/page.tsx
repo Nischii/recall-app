@@ -291,9 +291,12 @@ export default function RecallApp() {
                       <div className={styles.sublocSection}>
                         <div className={styles.sublocHeader}>
                           <span className={styles.sectionTitle} style={{marginBottom:0}}>{roomName(activeRoom)}</span>
-                          <button className={styles.manageBtn} onClick={() => setManagingRoom(managingRoom === activeRoom ? null : activeRoom)}>
-                            {managingRoom === activeRoom ? 'Done' : '⚙ Manage spots'}
-                          </button>
+                          <div style={{display:'flex', gap:8}}>
+                            <button className={styles.manageBtn} onClick={() => editRoom(activeRoom, roomName(activeRoom))}>✏️ Rename</button>
+                            <button className={styles.manageBtn} onClick={() => setManagingRoom(managingRoom === activeRoom ? null : activeRoom)}>
+                              {managingRoom === activeRoom ? 'Done' : '⚙ Manage spots'}
+                            </button>
+                          </div>
                         </div>
 
                         {/* Spot pills */}
@@ -319,10 +322,7 @@ export default function RecallApp() {
                         {/* Manage spots panel */}
                         {managingRoom === activeRoom && (
                           <div className={styles.managePanel}>
-                            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}}>
-                            <p className={styles.managePanelTitle} style={{marginBottom:0}}>Spots in {roomName(activeRoom)}</p>
-                            <button className={styles.manageBtn} onClick={() => editRoom(activeRoom, roomName(activeRoom))}>✏️ Rename room</button>
-                          </div>
+                            <p className={styles.managePanelTitle}>Spots in {roomName(activeRoom)}</p>
                             <div className={styles.managePanelList}>
                               {(sublocs[activeRoom] || []).length === 0 && (
                                 <p className={styles.managePanelEmpty}>No spots yet. Add your first one below.</p>
