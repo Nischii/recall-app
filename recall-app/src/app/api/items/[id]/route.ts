@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase'
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await supabase.from('items').delete().eq('id', params.id)
+  const { id } = await params
+  const { error } = await supabase.from('items').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
