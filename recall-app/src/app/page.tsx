@@ -170,7 +170,10 @@ export default function RecallApp() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name.trim() }),
     })
-    if (res.ok) setMembers(prev => [...prev, await res.json()])
+    if (res.ok) {
+      const member = await res.json()
+      setMembers(prev => [...prev, member])
+    }
   }
 
   function addSubloc(roomId: string) {
