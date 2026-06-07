@@ -13,7 +13,8 @@ export async function PATCH(
     .update({ name, ...(icon ? { icon } : {}) })
     .eq('id', id)
     .select()
-    .single()
+    .maybeSingle()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (!data) return NextResponse.json({ error: 'Room not found or update not permitted' }, { status: 404 })
   return NextResponse.json(data)
 }
