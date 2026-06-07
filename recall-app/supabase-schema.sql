@@ -54,4 +54,5 @@ create policy "Public insert members" on members for insert with check (true);
 
 create policy "Public read items" on items for select using (true);
 create policy "Public insert items" on items for insert with check (true);
+create policy "Public update items" on items for update using (true);
 create policy "Public delete items" on items for delete using (true);

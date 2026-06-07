@@ -49,6 +49,7 @@ export default function RecallApp() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '' })
   const [toast, setToast] = useState('')
   const [sublocs, setSublocs] = useState<Record<string, string[]>>({})
@@ -134,6 +135,46 @@ export default function RecallApp() {
       setActiveRoom(form.room_id)
       setActiveSubLoc(form.spot || null)
       showToast('Item saved!')
+    }
+    setAdding(false)
+  }
+
+  function startEdit(item: Item) {
+    setEditingItemId(item.id)
+    setForm({
+      name: item.name,
+      room_id: item.room_id,
+      spot: item.spot || '',
+      notes: item.notes || '',
+      member_id: item.member_id || '',
+    })
+    setTab('add')
+  }
+
+  function cancelEdit() {
+    setEditingItemId(null)
+    setForm(f => ({ ...f, name: '', spot: '', notes: '' }))
+    setTab('browse')
+  }
+
+  async function handleUpdate() {
+    if (!form.name.trim() || !form.room_id || !editingItemId) return
+    setAdding(true)
+    const res = await fetch(`/api/items/${editingItemId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setItems(prev => prev.map(it => it.id === editingItemId ? updated : it))
+      setEditingItemId(null)
+      setForm(f => ({ ...f, name: '', spot: '', notes: '' }))
+      setTab('browse')
+      showToast('Item updated!')
+    } else {
+      const err = await res.json().catch(() => ({}))
+      showToast(`Failed to update: ${err.error || res.status}`)
     }
     setAdding(false)
   }
@@ -245,7 +286,7 @@ export default function RecallApp() {
           <p className={styles.sectionTitle}>{filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''}</p>
           {filteredItems.length === 0
             ? <div className={styles.empty}>Nothing found for &ldquo;{search}&rdquo;</div>
-            : filteredItems.map(it => <ItemCard key={it.id} item={it} query={search} onDelete={handleDelete} memberName={memberName} />)
+            : filteredItems.map(it => <ItemCard key={it.id} item={it} query={search} onDelete={handleDelete} onEdit={startEdit} memberName={memberName} />)
           }
         </div>
       ) : (
@@ -286,16 +327,8 @@ export default function RecallApp() {
                   </div>
 
                   {!activeRoom && (
-                    <div style={{marginTop: 16}}>
-                      <p className={styles.sectionTitle}>
-                        All items — {items.filter(it => activeMember === 'everyone' || it.member_id === activeMember).length}
-                      </p>
-                      {items.filter(it => activeMember === 'everyone' || it.member_id === activeMember).length === 0
-                        ? <div className={styles.empty}>No items yet. Add your first one!</div>
-                        : items
-                            .filter(it => activeMember === 'everyone' || it.member_id === activeMember)
-                            .map(it => <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} memberName={memberName} />)
-                      }
+                    <div className={styles.empty} style={{marginTop: 24}}>
+                      Select a room to browse its items, or use the search bar to find anything.
                     </div>
                   )}
 
@@ -377,7 +410,7 @@ export default function RecallApp() {
                               </button>
                             </div>
                           : roomItems(activeRoom, activeSubLoc).map(it =>
-                              <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} memberName={memberName} />
+                              <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} onEdit={startEdit} memberName={memberName} />
                             )
                         }
                       </div>
@@ -388,7 +421,7 @@ export default function RecallApp() {
 
               {tab === 'add' && (
                 <div className={styles.formCard}>
-                  <p className={styles.sectionTitle}>Add an item</p>
+                  <p className={styles.sectionTitle}>{editingItemId ? 'Edit item' : 'Add an item'}</p>
                   <div className={styles.field}>
                     <label className={styles.label}>Item name *</label>
                     <input placeholder="e.g. Screwdriver set" value={form.name}
@@ -457,10 +490,21 @@ export default function RecallApp() {
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
                   </div>
                   <div className={styles.formActions}>
-                    <button className={styles.btnGhost} onClick={() => setForm(f => ({ ...f, name: '', spot: '', notes: '' }))}>Clear</button>
-                    <button className={styles.btnPrimary} onClick={handleAdd} disabled={adding || !form.name.trim()}>
-                      {adding ? 'Saving...' : '✓ Save item'}
-                    </button>
+                    {editingItemId ? (
+                      <>
+                        <button className={styles.btnGhost} onClick={cancelEdit}>Cancel</button>
+                        <button className={styles.btnPrimary} onClick={handleUpdate} disabled={adding || !form.name.trim()}>
+                          {adding ? 'Saving...' : '✓ Update item'}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button className={styles.btnGhost} onClick={() => setForm(f => ({ ...f, name: '', spot: '', notes: '' }))}>Clear</button>
+                        <button className={styles.btnPrimary} onClick={handleAdd} disabled={adding || !form.name.trim()}>
+                          {adding ? 'Saving...' : '✓ Save item'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -469,7 +513,7 @@ export default function RecallApp() {
                 <div>
                   <p className={styles.sectionTitle}>Recently added</p>
                   {[...items].filter(it => activeMember === 'everyone' || it.member_id === activeMember).slice(0, 15)
-                    .map(it => <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} memberName={memberName} timeAgo={timeAgo(it.created_at)} />)
+                    .map(it => <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} onEdit={startEdit} memberName={memberName} timeAgo={timeAgo(it.created_at)} />)
                   }
                   {items.length === 0 && <div className={styles.empty}>No items yet. Add your first one!</div>}
                 </div>
@@ -483,8 +527,8 @@ export default function RecallApp() {
   )
 }
 
-function ItemCard({ item, query, onDelete, memberName, timeAgo: ago }: {
-  item: Item; query: string; onDelete: (id: string) => void
+function ItemCard({ item, query, onDelete, onEdit, memberName, timeAgo: ago }: {
+  item: Item; query: string; onDelete: (id: string) => void; onEdit: (item: Item) => void
   memberName: (id: string | null) => string; timeAgo?: string
 }) {
   const room = (item as any).rooms?.name || '—'
@@ -501,7 +545,10 @@ function ItemCard({ item, query, onDelete, memberName, timeAgo: ago }: {
           {ago && <span className={styles.timeAgo}>{ago}</span>}
         </div>
       </div>
-      <button className={styles.deleteBtn} onClick={() => onDelete(item.id)} title="Remove item">🗑</button>
+      <div style={{display:'flex', flexDirection:'column', gap:6, flexShrink:0}}>
+        <button className={styles.deleteBtn} onClick={() => onEdit(item)} title="Edit item">✏️</button>
+        <button className={styles.deleteBtn} onClick={() => onDelete(item.id)} title="Remove item">🗑</button>
+      </div>
     </div>
   )
 }
