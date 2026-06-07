@@ -1,6 +1,28 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+
+  const { count, error: countError } = await supabase
+    .from('items')
+    .select('id', { count: 'exact', head: true })
+    .eq('room_id', id)
+  if (countError) return NextResponse.json({ error: countError.message }, { status: 500 })
+  if (count && count > 0)
+    return NextResponse.json(
+      { error: `This room has ${count} item${count > 1 ? 's' : ''} in it. Move or delete them first.` },
+      { status: 409 }
+    )
+
+  const { error } = await supabase.from('rooms').delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ success: true })
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

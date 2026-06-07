@@ -425,6 +425,17 @@
 
 .manageBtn:hover { background: var(--bg-surface); }
 
+.manageBtnDanger {
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 0.5px solid #ef444450;
+  border-radius: var(--radius-md);
+  background: none;
+  color: #ef4444;
+  cursor: pointer;
+}
+.manageBtnDanger:hover { background: #ef444415; }
+
 .sublocPills {
   display: flex;
   flex-wrap: wrap;

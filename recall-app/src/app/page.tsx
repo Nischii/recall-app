@@ -185,6 +185,20 @@ export default function RecallApp() {
     showToast('Item removed')
   }
 
+  async function deleteRoom(roomId: string, roomName: string) {
+    if (!confirm(`Delete "${roomName}"? This cannot be undone.`)) return
+    const res = await fetch(`/api/rooms/${roomId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setRooms(prev => prev.filter(r => r.id !== roomId))
+      setSublocs(prev => { const next = { ...prev }; delete next[roomId]; return next })
+      if (activeRoom === roomId) { setActiveRoom(null); setActiveSubLoc(null) }
+      showToast(`"${roomName}" deleted`)
+    } else {
+      const err = await res.json().catch(() => ({}))
+      showToast(err.error || 'Failed to delete room')
+    }
+  }
+
   async function editRoom(roomId: string, currentName: string) {
     const name = prompt('Rename room:', currentName)
     if (!name?.trim() || name.trim() === currentName) return
@@ -343,6 +357,7 @@ export default function RecallApp() {
                             <button className={styles.manageBtn} onClick={() => setManagingRoom(managingRoom === activeRoom ? null : activeRoom)}>
                               {managingRoom === activeRoom ? 'Done' : '⚙ Manage spots'}
                             </button>
+                            <button className={styles.manageBtnDanger} onClick={() => deleteRoom(activeRoom, roomName(activeRoom))}>🗑 Delete</button>
                           </div>
                         </div>
 
