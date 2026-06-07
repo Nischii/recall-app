@@ -18,6 +18,13 @@ export type Member = {
   created_at: string
 }
 
+export type Spot = {
+  id: string
+  room_id: string
+  name: string
+  created_at: string
+}
+
 export type Item = {
   id: string
   name: string

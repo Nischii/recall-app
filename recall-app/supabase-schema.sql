@@ -39,10 +39,22 @@ insert into members (name) values
   ('Alex'),
   ('Sam');
 
+create table if not exists spots (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid references rooms(id) on delete cascade,
+  name text not null,
+  created_at timestamptz default now()
+);
+
 -- Enable Row Level Security (open access — add auth later if needed)
 alter table rooms enable row level security;
 alter table members enable row level security;
 alter table items enable row level security;
+
+alter table spots enable row level security;
+create policy "Public read spots" on spots for select using (true);
+create policy "Public insert spots" on spots for insert with check (true);
+create policy "Public delete spots" on spots for delete using (true);
 
 create policy "Public read rooms" on rooms for select using (true);
 create policy "Public insert rooms" on rooms for insert with check (true);

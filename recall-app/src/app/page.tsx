@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
-import type { Room, Member, Item } from '@/lib/supabase'
+import type { Room, Member, Item, Spot } from '@/lib/supabase'
 import styles from './page.module.css'
 
 const ROOM_ICONS: Record<string, string> = {
@@ -25,16 +25,6 @@ function highlight(text: string, q: string) {
   return text.replace(re, '<mark>$1</mark>')
 }
 
-// Sub-locations stored per room in localStorage (key: room_id -> string[])
-function getSublocs(roomId: string): string[] {
-  try {
-    const raw = localStorage.getItem(`sublocs_${roomId}`)
-    return raw ? JSON.parse(raw) : []
-  } catch { return [] }
-}
-function saveSublocs(roomId: string, locs: string[]) {
-  localStorage.setItem(`sublocs_${roomId}`, JSON.stringify(locs))
-}
 
 type Tab = 'browse' | 'add' | 'recent'
 
@@ -52,7 +42,7 @@ export default function RecallApp() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '' })
   const [toast, setToast] = useState('')
-  const [sublocs, setSublocs] = useState<Record<string, string[]>>({})
+  const [spots, setSpots] = useState<Spot[]>([])
   const [newSublocInput, setNewSublocInput] = useState('')
   const [managingRoom, setManagingRoom] = useState<string | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -61,22 +51,20 @@ export default function RecallApp() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const [r, m, i] = await Promise.all([
+    const [r, m, i, sp] = await Promise.all([
       fetch('/api/rooms').then(r => r.json()),
       fetch('/api/members').then(r => r.json()),
       fetch('/api/items').then(r => r.json()),
+      fetch('/api/spots').then(r => r.json()),
     ])
     const roomList: Room[] = Array.isArray(r) ? r : []
     const memberList: Member[] = Array.isArray(m) ? m : []
     setRooms(roomList)
     setMembers(memberList)
     setItems(Array.isArray(i) ? i : [])
+    setSpots(Array.isArray(sp) ? sp : [])
     if (roomList.length > 0) setForm(f => ({ ...f, room_id: f.room_id || roomList[0].id }))
     if (memberList.length > 0) setForm(f => ({ ...f, member_id: f.member_id || memberList[0].id }))
-    // Load sublocs for all rooms
-    const sl: Record<string, string[]> = {}
-    roomList.forEach(rm => { sl[rm.id] = getSublocs(rm.id) })
-    setSublocs(sl)
     setLoading(false)
   }, [])
 
@@ -190,7 +178,7 @@ export default function RecallApp() {
     const res = await fetch(`/api/rooms/${roomId}`, { method: 'DELETE' })
     if (res.ok) {
       setRooms(prev => prev.filter(r => r.id !== roomId))
-      setSublocs(prev => { const next = { ...prev }; delete next[roomId]; return next })
+      setSpots(prev => prev.filter(s => s.room_id !== roomId))
       if (activeRoom === roomId) { setActiveRoom(null); setActiveSubLoc(null) }
       showToast(`"${roomName}" deleted`)
     } else {
@@ -228,7 +216,6 @@ export default function RecallApp() {
     if (res.ok) {
       const room = await res.json()
       setRooms(prev => [...prev, room])
-      setSublocs(prev => ({ ...prev, [room.id]: [] }))
       showToast(`"${name.trim()}" added!`)
     } else {
       const err = await res.json().catch(() => ({}))
@@ -250,22 +237,33 @@ export default function RecallApp() {
     }
   }
 
-  function addSubloc(roomId: string) {
+  async function addSubloc(roomId: string) {
     const name = newSublocInput.trim()
     if (!name) return
-    const updated = [...(sublocs[roomId] || []), name]
-    setSublocs(prev => ({ ...prev, [roomId]: updated }))
-    saveSublocs(roomId, updated)
-    setNewSublocInput('')
-    showToast(`"${name}" added to room`)
+    const res = await fetch('/api/spots', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, room_id: roomId }),
+    })
+    if (res.ok) {
+      const spot = await res.json()
+      setSpots(prev => [...prev, spot])
+      setNewSublocInput('')
+      showToast(`"${name}" added`)
+    } else {
+      showToast('Failed to add spot')
+    }
   }
 
-  function deleteSubloc(roomId: string, loc: string) {
-    const updated = (sublocs[roomId] || []).filter(l => l !== loc)
-    setSublocs(prev => ({ ...prev, [roomId]: updated }))
-    saveSublocs(roomId, updated)
-    if (activeSubLoc === loc) setActiveSubLoc(null)
-    if (form.spot === loc) setForm(f => ({ ...f, spot: '' }))
+  async function deleteSubloc(spot: Spot) {
+    const res = await fetch(`/api/spots/${spot.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setSpots(prev => prev.filter(s => s.id !== spot.id))
+      if (activeSubLoc === spot.name) setActiveSubLoc(null)
+      if (form.spot === spot.name) setForm(f => ({ ...f, spot: '' }))
+    } else {
+      showToast('Failed to delete spot')
+    }
   }
 
   const memberName = (id: string | null) => members.find(m => m.id === id)?.name || '—'
@@ -328,8 +326,8 @@ export default function RecallApp() {
                           <div className={styles.roomIcon}>{ricon(r.icon)}</div>
                           <div className={styles.roomName}>{r.name}</div>
                           <div className={styles.roomCount}>{count} item{count !== 1 ? 's' : ''}</div>
-                          {(sublocs[r.id]?.length > 0) && (
-                            <div className={styles.roomSubCount}>{sublocs[r.id].length} spot{sublocs[r.id].length !== 1 ? 's' : ''}</div>
+                          {spots.filter(s => s.room_id === r.id).length > 0 && (
+                            <div className={styles.roomSubCount}>{spots.filter(s => s.room_id === r.id).length} spot{spots.filter(s => s.room_id === r.id).length !== 1 ? 's' : ''}</div>
                           )}
                         </button>
                       )
@@ -368,13 +366,13 @@ export default function RecallApp() {
                             onClick={() => setActiveSubLoc(null)}>
                             All items
                           </button>
-                          {(sublocs[activeRoom] || []).map(loc => (
+                          {spots.filter(s => s.room_id === activeRoom).map(spot => (
                             <button
-                              key={loc}
-                              className={`${styles.sublocPill} ${activeSubLoc === loc ? styles.sublocActive : ''}`}
-                              onClick={() => setActiveSubLoc(activeSubLoc === loc ? null : loc)}>
-                              {loc}
-                              <span className={styles.sublocBadge}>{roomItems(activeRoom, loc).length}</span>
+                              key={spot.id}
+                              className={`${styles.sublocPill} ${activeSubLoc === spot.name ? styles.sublocActive : ''}`}
+                              onClick={() => setActiveSubLoc(activeSubLoc === spot.name ? null : spot.name)}>
+                              {spot.name}
+                              <span className={styles.sublocBadge}>{roomItems(activeRoom, spot.name).length}</span>
                             </button>
                           ))}
                           <button className={styles.sublocPillAdd}
@@ -386,14 +384,14 @@ export default function RecallApp() {
                           <div className={styles.managePanel}>
                             <p className={styles.managePanelTitle}>Spots in {roomName(activeRoom)}</p>
                             <div className={styles.managePanelList}>
-                              {(sublocs[activeRoom] || []).length === 0 && (
+                              {spots.filter(s => s.room_id === activeRoom).length === 0 && (
                                 <p className={styles.managePanelEmpty}>No spots yet. Add your first one below.</p>
                               )}
-                              {(sublocs[activeRoom] || []).map(loc => (
-                                <div key={loc} className={styles.managePanelRow}>
-                                  <span className={styles.managePanelLoc}>📦 {loc}</span>
-                                  <span className={styles.managePanelCount}>{roomItems(activeRoom, loc).length} item{roomItems(activeRoom, loc).length !== 1 ? 's' : ''}</span>
-                                  <button className={styles.managePanelDel} onClick={() => deleteSubloc(activeRoom, loc)} title="Remove spot">✕</button>
+                              {spots.filter(s => s.room_id === activeRoom).map(spot => (
+                                <div key={spot.id} className={styles.managePanelRow}>
+                                  <span className={styles.managePanelLoc}>📦 {spot.name}</span>
+                                  <span className={styles.managePanelCount}>{roomItems(activeRoom, spot.name).length} item{roomItems(activeRoom, spot.name).length !== 1 ? 's' : ''}</span>
+                                  <button className={styles.managePanelDel} onClick={() => deleteSubloc(spot)} title="Remove spot">✕</button>
                                 </div>
                               ))}
                             </div>
@@ -454,11 +452,11 @@ export default function RecallApp() {
                   <div className={styles.field}>
                     <label className={styles.label}>
                       Spot / sub-location
-                      {form.room_id && (sublocs[form.room_id] || []).length > 0 && (
+                      {form.room_id && spots.filter(s => s.room_id === form.room_id).length > 0 && (
                         <span className={styles.labelHint}> — pick a saved spot or type a new one</span>
                       )}
                     </label>
-                    {form.room_id && (sublocs[form.room_id] || []).length > 0 ? (
+                    {form.room_id && spots.filter(s => s.room_id === form.room_id).length > 0 ? (
                       <>
                         <div className={styles.spotPills}>
                           <button
@@ -467,13 +465,13 @@ export default function RecallApp() {
                             onClick={() => setForm(f => ({ ...f, spot: '' }))}>
                             None
                           </button>
-                          {(sublocs[form.room_id] || []).map(loc => (
+                          {spots.filter(s => s.room_id === form.room_id).map(spot => (
                             <button
                               type="button"
-                              key={loc}
-                              className={`${styles.spotPill} ${form.spot === loc ? styles.spotPillActive : ''}`}
-                              onClick={() => setForm(f => ({ ...f, spot: loc }))}>
-                              {loc}
+                              key={spot.id}
+                              className={`${styles.spotPill} ${form.spot === spot.name ? styles.spotPillActive : ''}`}
+                              onClick={() => setForm(f => ({ ...f, spot: spot.name }))}>
+                              {spot.name}
                             </button>
                           ))}
                         </div>
