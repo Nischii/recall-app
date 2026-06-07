@@ -36,7 +36,7 @@ function saveSublocs(roomId: string, locs: string[]) {
   localStorage.setItem(`sublocs_${roomId}`, JSON.stringify(locs))
 }
 
-type Tab = 'browse' | 'add' | 'recent' | 'ai'
+type Tab = 'browse' | 'add' | 'recent'
 
 export default function RecallApp() {
   const [rooms, setRooms] = useState<Room[]>([])
@@ -49,9 +49,6 @@ export default function RecallApp() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
-  const [aiQuery, setAiQuery] = useState('')
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiResult, setAiResult] = useState<{ answer: string; items: Item[] } | null>(null)
   const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '' })
   const [toast, setToast] = useState('')
   const [sublocs, setSublocs] = useState<Record<string, string[]>>({})
@@ -133,18 +130,6 @@ export default function RecallApp() {
     await fetch(`/api/items/${id}`, { method: 'DELETE' })
     setItems(prev => prev.filter(it => it.id !== id))
     showToast('Item removed')
-  }
-
-  async function handleAiSearch() {
-    if (!aiQuery.trim()) return
-    setAiLoading(true); setAiResult(null)
-    const res = await fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: aiQuery }),
-    })
-    setAiResult(await res.json())
-    setAiLoading(false)
   }
 
   async function addRoom() {
@@ -236,12 +221,11 @@ export default function RecallApp() {
       ) : (
         <>
           <nav className={styles.tabs}>
-            {(['browse', 'add', 'recent', 'ai'] as Tab[]).map(t => (
+            {(['browse', 'add', 'recent'] as Tab[]).map(t => (
               <button key={t} className={`${styles.tab} ${tab === t ? styles.activeTab : ''}`} onClick={() => setTab(t)}>
                 {t === 'browse' && '🏠 Browse'}
                 {t === 'add' && '➕ Add item'}
                 {t === 'recent' && '🕐 Recent'}
-                {t === 'ai' && '✨ AI search'}
               </button>
             ))}
           </nav>
@@ -444,36 +428,6 @@ export default function RecallApp() {
                 </div>
               )}
 
-              {tab === 'ai' && (
-                <div>
-                  <div className={styles.aiBox}>
-                    <p className={styles.aiLabel}>Ask anything about your home</p>
-                    <div className={styles.aiRow}>
-                      <input placeholder='e.g. "Where did Dad put the drill?"' value={aiQuery}
-                        onChange={e => setAiQuery(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleAiSearch()} />
-                      <button className={styles.btnPrimary} onClick={handleAiSearch} disabled={aiLoading || !aiQuery.trim()}>
-                        {aiLoading ? '...' : '✨ Ask'}
-                      </button>
-                    </div>
-                    <div className={styles.aiSuggestions}>
-                      {['Where is the first aid kit?', 'What did Mom add?', "What's in the garage?"].map(s => (
-                        <button key={s} className={styles.suggestion} onClick={() => setAiQuery(s)}>{s}</button>
-                      ))}
-                    </div>
-                  </div>
-                  {aiLoading && <div className={styles.empty}>Thinking...</div>}
-                  {aiResult && (
-                    <div>
-                      <div className={styles.aiAnswer}>{aiResult.answer}</div>
-                      {aiResult.items?.length > 0
-                        ? aiResult.items.map((it: Item) => <ItemCard key={it.id} item={it} query="" onDelete={handleDelete} memberName={memberName} />)
-                        : <div className={styles.empty}>No matching items found in your inventory.</div>
-                      }
-                    </div>
-                  )}
-                </div>
-              )}
             </>
           )}
         </>
