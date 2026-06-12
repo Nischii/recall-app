@@ -22,6 +22,7 @@ create table if not exists items (
   member_id uuid references members(id) on delete set null,
   quantity integer not null default 1,
   expires_at date,
+  tags text[] default '{}',
   created_at timestamptz default now()
 );
 

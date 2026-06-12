@@ -693,6 +693,94 @@
   box-shadow: 0 2px 8px rgba(83,74,183,0.28);
 }
 
+.tagFilterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tagFilterChip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.tagFilterChip:hover { background: #fff; color: #0e7490; }
+
+.tagFilterActive {
+  background: #0e7490;
+  color: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(14,116,144,0.28);
+}
+
+.tagFilterClear {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 20px;
+  background: none;
+  font-size: 12px;
+  color: var(--text-hint);
+  cursor: pointer;
+}
+
+.tagFilterClear:hover { color: var(--text-muted); }
+
+.tagPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tagPill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.tagPill:hover { background: #fff; color: #0e7490; }
+
+.tagPillActive {
+  background: #0e7490;
+  color: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(14,116,144,0.28);
+}
+
+.itemTagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.tagBadge {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #cffafe;
+  color: #0e7490;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tagBadge { background: #0c3b45; color: #67e8f9; }
+  .tagFilterActive, .tagPillActive { background: #0e7490; }
+}
+
 .labelHint {
   font-weight: 400;
   color: var(--text-hint);

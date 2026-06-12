@@ -34,6 +34,7 @@ export type Item = {
   member_id: string | null
   quantity: number
   expires_at: string | null
+  tags: string[]
   created_at: string
   rooms?: Room
   members?: Member

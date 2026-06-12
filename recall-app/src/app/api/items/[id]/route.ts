@@ -6,7 +6,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { name, room_id, spot, notes, member_id, quantity, expires_at } = await request.json()
+  const { name, room_id, spot, notes, member_id, quantity, expires_at, tags } = await request.json()
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 })
   const { data, error } = await supabase
     .from('items')
@@ -17,6 +17,7 @@ export async function PATCH(
       member_id: member_id || null,
       quantity: quantity ? Number(quantity) : 1,
       expires_at: expires_at || null,
+      tags: Array.isArray(tags) ? tags : [],
     })
     .eq('id', id)
     .select('*, rooms(*), members(*)')

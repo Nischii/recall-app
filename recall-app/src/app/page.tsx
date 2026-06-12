@@ -39,6 +39,11 @@ function highlight(text: string, q: string) {
 }
 
 
+const PRESET_TAGS = [
+  '🍎 Food & Drink', '💊 Medicine', '🔧 Tools', '👕 Clothing',
+  '💻 Electronics', '🧹 Cleaning', '📚 Books', '🏋️ Sports', '🌱 Garden', '🧸 Kids',
+]
+
 type Tab = 'browse' | 'add' | 'recent'
 
 export default function RecallApp() {
@@ -53,7 +58,8 @@ export default function RecallApp() {
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
-  const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '', quantity: '1', expires_at: '' })
+  const [form, setForm] = useState({ name: '', room_id: '', spot: '', notes: '', member_id: '', quantity: '1', expires_at: '', tags: [] as string[] })
+  const [activeTags, setActiveTags] = useState<string[]>([])
   const [toast, setToast] = useState('')
   const [spots, setSpots] = useState<Spot[]>([])
   const [newSublocInput, setNewSublocInput] = useState('')
@@ -100,9 +106,12 @@ export default function RecallApp() {
     setForm(f => ({ ...f, room_id: roomId, spot: '' }))
   }
 
+  const tagMatch = (it: Item) =>
+    activeTags.length === 0 || activeTags.some(t => (it.tags || []).includes(t))
+
   const filteredItems = items.filter(it => {
-    const memberOk = activeMember === 'everyone' || it.member_id === activeMember
-    if (!memberOk) return false
+    if (activeMember !== 'everyone' && it.member_id !== activeMember) return false
+    if (!tagMatch(it)) return false
     if (!search) return true
     const q = search.toLowerCase()
     return (
@@ -117,8 +126,19 @@ export default function RecallApp() {
     items.filter(it =>
       it.room_id === roomId &&
       (spot == null || it.spot === spot) &&
-      (activeMember === 'everyone' || it.member_id === activeMember)
+      (activeMember === 'everyone' || it.member_id === activeMember) &&
+      tagMatch(it)
     )
+
+  const allItemTags = Array.from(new Set(items.flatMap(it => it.tags || []))).filter(Boolean)
+
+  function toggleFilterTag(tag: string) {
+    setActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
+  }
+
+  function toggleFormTag(tag: string) {
+    setForm(f => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag] }))
+  }
 
   async function handleAdd() {
     if (!form.name.trim() || !form.room_id) return
@@ -131,7 +151,7 @@ export default function RecallApp() {
     if (res.ok) {
       const newItem = await res.json()
       setItems(prev => [newItem, ...prev])
-      setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))
+      setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '', tags: [] }))
       setTab('browse')
       setActiveRoom(form.room_id)
       setActiveSubLoc(form.spot || null)
@@ -150,13 +170,14 @@ export default function RecallApp() {
       member_id: item.member_id || '',
       quantity: String(item.quantity ?? 1),
       expires_at: item.expires_at || '',
+      tags: item.tags || [],
     })
     setTab('add')
   }
 
   function cancelEdit() {
     setEditingItemId(null)
-    setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))
+    setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '', tags: [] }))
     setTab('browse')
   }
 
@@ -172,7 +193,7 @@ export default function RecallApp() {
       const updated = await res.json()
       setItems(prev => prev.map(it => it.id === editingItemId ? updated : it))
       setEditingItemId(null)
-      setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '' }))
+      setForm(f => ({ ...f, name: '', spot: '', notes: '', quantity: '1', expires_at: '', tags: [] }))
       setTab('browse')
       showToast('Item updated!')
     } else {
@@ -307,6 +328,21 @@ export default function RecallApp() {
         <input ref={searchRef} className={styles.searchInput} type="text" placeholder="Search any item..." value={search} onChange={e => setSearch(e.target.value)} />
         {search && <button className={styles.clearBtn} onClick={() => setSearch('')}>✕</button>}
       </div>
+
+      {allItemTags.length > 0 && (
+        <div className={styles.tagFilterRow}>
+          {allItemTags.map(tag => (
+            <button key={tag}
+              className={`${styles.tagFilterChip} ${activeTags.includes(tag) ? styles.tagFilterActive : ''}`}
+              onClick={() => toggleFilterTag(tag)}>
+              {tag}
+            </button>
+          ))}
+          {activeTags.length > 0 && (
+            <button className={styles.tagFilterClear} onClick={() => setActiveTags([])}>✕ Clear</button>
+          )}
+        </div>
+      )}
 
       {search ? (
         <div className={styles.searchResults}>
@@ -517,6 +553,18 @@ export default function RecallApp() {
                     <input placeholder="e.g. Blue handle, next to the drill" value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
                   </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Tags <span className={styles.labelHint}>(pick any that apply)</span></label>
+                    <div className={styles.tagPills}>
+                      {PRESET_TAGS.map(tag => (
+                        <button type="button" key={tag}
+                          className={`${styles.tagPill} ${form.tags.includes(tag) ? styles.tagPillActive : ''}`}
+                          onClick={() => toggleFormTag(tag)}>
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div style={{display:'flex', gap:12}}>
                     <div className={styles.field} style={{flex:1}}>
                       <label className={styles.label}>Quantity</label>
@@ -609,6 +657,13 @@ function ItemCard({ item, query, onDelete, onEdit, memberName, timeAgo: ago }: {
           )}
           {ago && <span className={styles.timeAgo}>{ago}</span>}
         </div>
+        {(item.tags || []).length > 0 && (
+          <div className={styles.itemTagRow}>
+            {(item.tags || []).map(tag => (
+              <span key={tag} className={styles.tagBadge}>{tag}</span>
+            ))}
+          </div>
+        )}
       </div>
       <div style={{display:'flex', flexDirection:'column', gap:6, flexShrink:0}}>
         <button className={styles.deleteBtn} onClick={() => onEdit(item)} title="Edit item">✏️</button>

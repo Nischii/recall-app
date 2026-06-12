@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const { name, room_id, spot, notes, member_id, quantity, expires_at } = body
+  const { name, room_id, spot, notes, member_id, quantity, expires_at, tags } = body
 
   if (!name || !room_id) {
     return NextResponse.json({ error: 'name and room_id are required' }, { status: 400 })
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       member_id: member_id || null,
       quantity: quantity ? Number(quantity) : 1,
       expires_at: expires_at || null,
+      tags: Array.isArray(tags) ? tags : [],
     })
     .select('*, rooms(id,name,icon), members(id,name)')
     .single()
