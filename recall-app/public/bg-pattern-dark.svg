@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140">
+  <g fill="none" stroke="#c8a870" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.10">
+    <!-- Chimney -->
+    <rect x="82" y="37" width="8" height="15"/>
+    <!-- Roof -->
+    <path d="M24 62 L70 34 L116 62"/>
+    <!-- House body -->
+    <rect x="34" y="62" width="72" height="40"/>
+    <!-- Door -->
+    <path d="M60 102 L60 86 A10 10 0 0 1 80 86 L80 102"/>
+    <!-- Left window with cross -->
+    <rect x="39" y="68" width="16" height="13" rx="1"/>
+    <line x1="47" y1="68" x2="47" y2="81"/>
+    <line x1="39" y1="74.5" x2="55" y2="74.5"/>
+    <!-- Right window with cross -->
+    <rect x="85" y="68" width="16" height="13" rx="1"/>
+    <line x1="93" y1="68" x2="93" y2="81"/>
+    <line x1="85" y1="74.5" x2="101" y2="74.5"/>
+  </g>
+</svg>
