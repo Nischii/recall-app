@@ -7,7 +7,13 @@ const ROOM_ICONS: Record<string, string> = {
   car: '🚗', tool: '🔧', bed: '🛏️', sofa: '🛋️', droplet: '🚿',
   'stairs-down': '📦', home: '🏠', kitchen: '🍳', garage: '🔩',
 }
+const ROOM_COLORS: Record<string, string> = {
+  car: '#e8edf2', tool: '#fef3c7', bed: '#ede9fe', sofa: '#dcfce7',
+  droplet: '#e0f2fe', 'stairs-down': '#fff7ed', home: '#fef9ee',
+  kitchen: '#fef3e2', garage: '#e8edf2',
+}
 function ricon(name: string) { return ROOM_ICONS[name] || '📦' }
+function rcolor(name: string) { return ROOM_COLORS[name] || '#f5f4fe' }
 
 function timeAgo(ts: string) {
   const d = Date.now() - new Date(ts).getTime()
@@ -325,7 +331,7 @@ export default function RecallApp() {
                       return (
                         <button key={r.id} className={`${styles.roomCard} ${activeRoom === r.id ? styles.activeRoom : ''}`}
                           onClick={() => { setActiveRoom(activeRoom === r.id ? null : r.id); setActiveSubLoc(null) }}>
-                          <div className={styles.roomIcon}>{ricon(r.icon)}</div>
+                          <div className={styles.roomIcon} style={{background: rcolor(r.icon)}}>{ricon(r.icon)}</div>
                           <div className={styles.roomName}>{r.name}</div>
                           <div className={styles.roomCount}>{count} item{count !== 1 ? 's' : ''}</div>
                           {spots.filter(s => s.room_id === r.id).length > 0 && (
@@ -578,7 +584,7 @@ function ItemCard({ item, query, onDelete, onEdit, memberName, timeAgo: ago }: {
   const expiry = expiryBadge(item.expires_at)
   return (
     <div className={styles.itemCard}>
-      <div className={styles.itemIcon}>{ROOM_ICONS[(item as any).rooms?.icon] || '📦'}</div>
+      <div className={styles.itemIcon} style={{background: rcolor((item as any).rooms?.icon || '')}}>{ROOM_ICONS[(item as any).rooms?.icon] || '📦'}</div>
       <div className={styles.itemInfo}>
         <div className={styles.itemName} dangerouslySetInnerHTML={{ __html: highlight(item.name, query) }} />
         <div className={styles.itemLoc}>📍 {loc}</div>

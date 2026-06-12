@@ -21,22 +21,23 @@
 }
 
 .logoMark {
-  font-size: 24px;
-  width: 36px;
-  height: 36px;
-  background: #534AB7;
-  border-radius: 10px;
+  font-size: 22px;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #534AB7 0%, #7B74D4 100%);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.30);
 }
 
 .logoText {
   font-size: 22px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.4px;
 }
 
 .memberBar {
@@ -47,10 +48,11 @@
 }
 
 .memberChip {
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 20px;
-  border: 0.5px solid var(--border-strong);
-  background: none;
+  border: none;
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
@@ -58,15 +60,16 @@
 }
 
 .memberChip:hover {
-  border-color: #534AB7;
+  background: #fff;
   color: #534AB7;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
 
 .memberChip.active {
-  background: #EEEDFE;
-  border-color: #AFA9EC;
-  color: #3C3489;
+  background: #534AB7;
+  color: #fff;
   font-weight: 500;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.28);
 }
 
 .searchWrap {
@@ -76,7 +79,7 @@
 
 .searchIcon {
   position: absolute;
-  left: 12px;
+  left: 13px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 16px;
@@ -85,10 +88,17 @@
 }
 
 .searchInput {
-  padding-left: 38px !important;
+  padding-left: 40px !important;
   padding-right: 36px !important;
   font-size: 15px;
-  background: var(--bg) !important;
+  background: #fff !important;
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07) !important;
+}
+
+.searchInput:focus {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07), 0 0 0 3px rgba(83,74,183,0.12) !important;
 }
 
 .clearBtn {
@@ -108,102 +118,128 @@
 
 .tabs {
   display: flex;
-  gap: 6px;
+  gap: 3px;
   margin-bottom: 16px;
+  padding: 4px;
+  background: rgba(255,255,255,0.75);
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
   overflow-x: auto;
-  padding-bottom: 2px;
 }
 
 .tab {
   flex-shrink: 0;
-  padding: 7px 12px;
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-md);
-  background: none;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   font-size: 13px;
   color: var(--text-muted);
   white-space: nowrap;
+  transition: all 0.12s;
 }
 
-.tab:hover { background: var(--bg-surface); }
+.tab:hover { background: rgba(255,255,255,0.9); color: var(--text); }
 
 .activeTab {
-  background: #EEEDFE;
-  border-color: #AFA9EC;
-  color: #3C3489;
+  background: #fff;
+  color: #534AB7;
   font-weight: 500;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.09);
 }
 
 .roomGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .roomCard {
   background: var(--bg);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 14px;
+  border: none;
+  border-radius: 18px;
+  padding: 16px;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.12s;
+  transition: box-shadow 0.15s, transform 0.15s;
+  box-shadow: var(--shadow-card);
 }
 
-.roomCard:hover { border-color: var(--border-strong); }
+.roomCard:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
 
 .activeRoom {
-  border-color: #534AB7 !important;
-  background: #EEEDFE;
+  box-shadow: 0 4px 18px rgba(83,74,183,0.22) !important;
+  background: #faf9ff;
+  transform: translateY(-1px);
 }
 
 .addRoomCard {
-  background: none;
-  border: 0.5px dashed var(--border-strong);
-  border-radius: var(--radius-lg);
-  padding: 14px;
+  background: rgba(255,255,255,0.45);
+  border: 1.5px dashed rgba(0,0,0,0.16);
+  border-radius: 18px;
+  padding: 16px;
   text-align: left;
   cursor: pointer;
   color: var(--text-hint);
-  transition: border-color 0.12s;
+  transition: all 0.15s;
 }
 
-.addRoomCard:hover { border-color: #534AB7; color: #534AB7; }
+.addRoomCard:hover {
+  border-color: #534AB7;
+  color: #534AB7;
+  background: #faf9ff;
+  transform: translateY(-2px);
+}
 
-.roomIcon { font-size: 22px; margin-bottom: 6px; }
+.roomIcon {
+  font-size: 24px;
+  margin-bottom: 10px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-.roomName { font-size: 13px; font-weight: 500; color: var(--text); }
+.roomName { font-size: 14px; font-weight: 600; color: var(--text); }
 
-.roomCount { font-size: 12px; color: var(--text-hint); margin-top: 2px; }
+.roomCount { font-size: 12px; color: var(--text-hint); margin-top: 3px; }
 
 .sectionTitle {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-hint);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   margin-bottom: 8px;
   margin-top: 4px;
 }
 
 .itemCard {
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: none;
   border-radius: var(--radius-lg);
-  padding: 12px 14px;
-  margin-bottom: 8px;
+  padding: 13px 14px;
+  margin-bottom: 10px;
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.12s;
 }
+
+.itemCard:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.09); }
 
 .itemIcon {
   font-size: 20px;
-  width: 36px;
-  height: 36px;
-  background: #EEEDFE;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -271,15 +307,17 @@
   border-radius: 6px;
   flex-shrink: 0;
   margin-top: -2px;
+  transition: opacity 0.12s;
 }
 
 .deleteBtn:hover { opacity: 0.9; }
 
 .formCard {
   background: var(--bg);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  border: none;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow-card);
 }
 
 .field { margin-bottom: 12px; }
@@ -299,36 +337,48 @@
 
 .btnPrimary {
   flex: 1;
-  padding: 9px 16px;
-  background: #534AB7;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #534AB7 0%, #6B63CC 100%);
   color: #fff;
   border: none;
   border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.28);
+  transition: all 0.15s;
 }
 
-.btnPrimary:hover:not(:disabled) { background: #3C3489; }
+.btnPrimary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3C3489 0%, #534AB7 100%);
+  box-shadow: 0 4px 14px rgba(83,74,183,0.36);
+  transform: translateY(-1px);
+}
 
-.btnPrimary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnPrimary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 .btnGhost {
-  padding: 9px 14px;
-  background: none;
-  border: 0.5px solid var(--border-strong);
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.8);
+  border: none;
   border-radius: var(--radius-md);
   font-size: 14px;
   color: var(--text-muted);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: all 0.12s;
 }
 
-.btnGhost:hover { background: var(--bg-surface); }
+.btnGhost:hover {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
 
 .aiBox {
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: none;
   border-radius: var(--radius-lg);
   padding: 16px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 .aiLabel {
@@ -400,10 +450,11 @@
 
 .sublocSection {
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: none;
   border-radius: var(--radius-lg);
-  padding: 12px 14px;
+  padding: 13px 14px;
   margin-bottom: 4px;
+  box-shadow: var(--shadow-card);
 }
 
 .sublocHeader {
@@ -415,26 +466,37 @@
 
 .manageBtn {
   font-size: 12px;
-  padding: 4px 10px;
-  border: 0.5px solid var(--border-strong);
+  padding: 5px 11px;
+  border: none;
   border-radius: var(--radius-md);
-  background: none;
+  background: rgba(255,255,255,0.8);
   color: var(--text-muted);
   cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: all 0.12s;
 }
 
-.manageBtn:hover { background: var(--bg-surface); }
+.manageBtn:hover {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  color: var(--text);
+}
 
 .manageBtnDanger {
   font-size: 12px;
-  padding: 4px 10px;
-  border: 0.5px solid #ef444450;
+  padding: 5px 11px;
+  border: none;
   border-radius: var(--radius-md);
-  background: none;
+  background: rgba(255,255,255,0.8);
   color: #ef4444;
   cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: all 0.12s;
 }
-.manageBtnDanger:hover { background: #ef444415; }
+.manageBtnDanger:hover {
+  background: #fff0f0;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.16);
+}
 
 .sublocPills {
   display: flex;
@@ -446,23 +508,33 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 11px;
-  border: 0.5px solid var(--border);
+  padding: 6px 12px;
+  border: none;
   border-radius: 20px;
-  background: none;
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   font-size: 13px;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.12s;
 }
 
-.sublocPill:hover { border-color: #534AB7; color: #534AB7; }
+.sublocPill:hover {
+  background: #fff;
+  color: #534AB7;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.14);
+}
 
 .sublocActive {
-  background: #EEEDFE;
-  border-color: #AFA9EC;
-  color: #3C3489;
+  background: #534AB7;
+  color: #fff;
   font-weight: 500;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.28);
+}
+
+.sublocActive .sublocBadge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
 }
 
 .sublocBadge {
@@ -472,7 +544,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  background: rgba(83,74,183,0.15);
+  background: rgba(83,74,183,0.12);
   color: #3C3489;
   border-radius: 10px;
   font-size: 11px;
@@ -480,28 +552,30 @@
 }
 
 .sublocPillAdd {
-  padding: 5px 11px;
-  border: 0.5px dashed var(--border-strong);
+  padding: 6px 12px;
+  border: 1.5px dashed rgba(0,0,0,0.16);
   border-radius: 20px;
-  background: none;
+  background: transparent;
   font-size: 13px;
   color: var(--text-hint);
   cursor: pointer;
+  transition: all 0.12s;
 }
 
 .sublocPillAdd:hover { border-color: #534AB7; color: #534AB7; }
 
 .managePanel {
   margin-top: 12px;
-  background: var(--bg-surface);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-md);
+  background: var(--bg);
+  border: none;
+  border-radius: 12px;
   padding: 12px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
 }
 
 .managePanelTitle {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 10px;
 }
@@ -563,23 +637,28 @@
 }
 
 .spotPill {
-  padding: 5px 12px;
-  border: 0.5px solid var(--border);
+  padding: 6px 13px;
+  border: none;
   border-radius: 20px;
-  background: none;
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   font-size: 13px;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.12s;
 }
 
-.spotPill:hover { border-color: #534AB7; color: #534AB7; }
+.spotPill:hover {
+  background: #fff;
+  color: #534AB7;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.14);
+}
 
 .spotPillActive {
-  background: #EEEDFE;
-  border-color: #AFA9EC;
-  color: #3C3489;
+  background: #534AB7;
+  color: #fff;
   font-weight: 500;
+  box-shadow: 0 2px 8px rgba(83,74,183,0.28);
 }
 
 .labelHint {
@@ -595,11 +674,12 @@
   transform: translateX(-50%);
   background: #1a1a1a;
   color: #fff;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 20px;
   font-size: 14px;
   z-index: 100;
   animation: fadeIn 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
 }
 
 @keyframes fadeIn {
